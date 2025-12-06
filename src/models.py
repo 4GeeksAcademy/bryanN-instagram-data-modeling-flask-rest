@@ -1,12 +1,15 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
 
 class Follower(db.Model):
     user_from_id: Mapped[int] = mapped_column(ForeignKey('user.id'),primary_key=True)
     user_to_id: Mapped[int] = mapped_column(ForeignKey('user.id'),primary_key=True)
+
+    user_from= relationship('User', foreign_keys=[user_from_id], backref='following')
+    user_to = relationship("User", foreign_keys=[user_to_id], backref="followers")
 
     def serialize(self):
         return {
@@ -20,6 +23,10 @@ class User(db.Model):
     firstname: Mapped[str] = mapped_column(String(120), nullable=False)
     lastname: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+
+    comment=relationship('Comment', backref= 'author')
+    post=relationship('Post', backref='author')
+
 
     def serialize(self):
         return {
@@ -48,6 +55,9 @@ class Comment(db.Model):
 class Post(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+
+    comment=relationship('Comment', backref='post')
+    media=relationship('Media', backref='post')
 
     def serialize(self):
         return {
